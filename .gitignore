@@ -1,0 +1,10 @@
+# Ignore directory target
+target/
+
+# Ignore temporary files and system files
+*.log
+*.tmp
+
+# Ignore binary files
+*.class
+*.jar

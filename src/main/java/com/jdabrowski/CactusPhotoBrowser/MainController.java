@@ -1,47 +1,34 @@
 package com.jdabrowski.CactusPhotoBrowser;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.ResourceBundle;
 
 import com.jdabrowski.CactusPhotoBrowser.models.ImageFile;
 import com.jdabrowski.CactusPhotoBrowser.services.ImageService;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.CacheHint;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.FileInputStream;
-
 public class MainController {
 	
 	private final ImageFile imagefile = new ImageFile();
 	
 	private final ImageService imageService = new ImageService(); 
-	
-	private Path pathToFile;
-	
+		
 	private ArrayList<String> imageFiles = new ArrayList<>();
 	
 	
@@ -63,16 +50,17 @@ public class MainController {
 		this.imgaeViewer1.setCache(true);
     }
 	
+	//Create listener to set window dimension
 	public void setStage(Stage stage) {
-        // Nasłuchiwanie zmiany szerokości okna
+        // Listening for changes of width
         stage.widthProperty().addListener((observable, oldValue, newValue) -> {
         	this.targetWidth = (double)newValue;
 
         });
 
-        // Nasłuchiwanie zmiany wysokości okna
+        // Listening for changes of height        
         stage.heightProperty().addListener((observable, oldValue, newValue) -> {
-        	this.targetHeight= (double)newValue -100;
+        	this.targetHeight= (double)newValue -100; // I minus 100px because of the menus size
 
         });
     }
@@ -83,115 +71,55 @@ public class MainController {
 	 */
 	@FXML
 	private void viewImage() {
-		// FileChooser do wybierania plików z obrazami
+		// FileChooser for select image
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg"));
         
-        // Przycisk do załadowania obrazu
+        // Set path of the file into object
         imagefile.setPath(Paths.get(fileChooser.showOpenDialog(null).getPath()));
-        //this.pathToFile =  Paths.get(fileChooser.showOpenDialog(null).getPath());
-        //System.out.println(pathToFile);
-        //Path path = Paths.get(fileChooser.showOpenDialog(null).getPath());
-  
-        Path parentDir = imagefile.getPath().getParent();
+        // Set file name from path file
+        imagefile.setName(imagefile.getPath().getFileName().toString());
         
-        //loadImg(this.pathToFile);
+               
+        // Load image into imageViewer1 by use imageService method 
         imageService.loadImage(imgaeViewer1, imagefile.getPath(), targetHeight);
         
-    	this.imagefile.setName(imagefile.getPath().getFileName().toString());
+    	
+        // Get parent directory of loaded file
+        Path parentDir = imagefile.getPath().getParent();
         
+        // Clean imageFiles list
         if(!this.imageFiles.isEmpty()) {
         	this.imageFiles.clear();
         }
-        
-        
-        if(this.imageFiles.isEmpty()) {
-        	// Pobieranie listy plików
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(parentDir, "*.{jpg,JPG}")) {
-                for (Path entry : stream) {
-                    // Pobieranie daty utworzenia pliku
-                    BasicFileAttributes attrs = Files.readAttributes(entry, BasicFileAttributes.class);
+            
+
+        // Load image files names into list
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(parentDir, "*.{jpg,JPG}")) {
+        	
+            for (Path entry : stream) {
+                 // Pobieranie daty utworzenia pliku
+                 BasicFileAttributes attrs = Files.readAttributes(entry, BasicFileAttributes.class);
                     
-                    // Dodawanie pliku do listy wraz z datą utworzenia
-                    this.imageFiles.add(entry.getFileName().toString());
-                }
-            } catch (IOException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
-        }
+                 // Dodawanie pliku do listy wraz z datą utworzenia
+                 this.imageFiles.add(entry.getFileName().toString());
+             }
+        } catch (IOException e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    	}
+
 
                 
 	}	
-	/*
-	private void loadImg(Path path) {
-		System.out.println(path.toUri().toString());
-		this.pathToFile = path;
-		if (path != null) {
-            try {
-                
-            	
-            	// Load the image from the file            	
-            	Image image = new Image(path.toUri().toString());
-            	this.imagefile.setPath(path);
-            	this.imagefile.setName(path.getFileName().toString());
-                
-            	// Get dimension of loaded image
-            	double originalWidth = image.getWidth();
-            	double originalHeight = image.getHeight();
-            	image= null;
-            	
-            	//Get the height of are to view picture
-            	//double targetHeight = stackPane1.getHeight();
-            	
-            	if(originalHeight<this.targetHeight){
-            		image = new Image(path.toUri().toString(), originalWidth, originalHeight, true, true);
-            	}else {
-            		// Calculate new width from target height used proportion
-                	double newTargetWidth = (this.targetHeight / originalHeight) * originalWidth;
 
-                	// Overwrite content of image 
-                	image = new Image(path.toUri().toString(), newTargetWidth, this.targetHeight, true, true);
-                	
-            	}
-            	this.imgaeViewer1.setImage(null);
-            	this.imgaeViewer1.setDisable(true);
-            	          
-            	ImageService imageService = new ImageService();
-                      	
-                int orientation = imageService.getOrientation(path);
-                if (orientation >1) {
-                	this.imgaeViewer1.setImage(imageService.rotateImage(image, orientation));
-                	this.imgaeViewer1.setDisable(false);
-                }else {
-                	this.imgaeViewer1.setImage(image);
-                	this.imgaeViewer1.setDisable(false);
-                }
-                
-            	
-                // Cleaning data of image (bitmap)
-                image = null;
-                //imageService = null;
-                //System.gc();
-                //Ustawienie orientacji zdjęcia
-                
-                // this.imgaeViewer1.setPreserveRatio(true);  // Zachowanie proporcji        
-                
-                // imgaeViewer1.setFitHeight(targetHeight);
-                
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-	} */
 	
 	@FXML
 	private void nextImg() {	
 		
 		String paretDir = imagefile.getPath().getParent().toString();
         
-        //loadImg(Paths.get(pathToFile.getParent().toString()+"/"+getNextFileName()));
+
         imageService.loadImage(imgaeViewer1, Paths.get(paretDir+"/"+getNextFileName()), targetHeight);
         
         imagefile.setPath(Paths.get(paretDir+"/"+getNextFileName()));
