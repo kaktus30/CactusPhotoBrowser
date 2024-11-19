@@ -47,7 +47,7 @@ public class MainController {
 	@FXML
     public void initialize() {
 		// Use cache of GPU to restore image
-		this.imgaeViewer1.setCache(true);
+		//this.imgaeViewer1.setCache(true);
     }
 	
 	//Create listener to set window dimension
@@ -133,7 +133,6 @@ public class MainController {
 		
 		String paretDir = imagefile.getPath().getParent().toString();
                
-        //loadImg(Paths.get(pathToFile.getParent().toString()+"/"+getPreviousFileName()));
 		imageService.loadImage(imgaeViewer1, Paths.get(paretDir+"/"+getPreviousFileName()), targetHeight);
         
         imagefile.setPath(Paths.get(paretDir+"/"+getPreviousFileName()));
@@ -145,26 +144,27 @@ public class MainController {
 	private String getNextFileName() {
         for (int i = 0; i < this.imageFiles.size(); i++) {
             if (this.imageFiles.get(i).equals(imagefile.getName())) {
-                // Oblicz indeks następnego pliku (lub 0, jeśli to ostatni element)
+
+            	// Calculate next file index, if current file is last select 0 index 
                 int nextIndex = (i + 1) % imageFiles.size();
                 return imageFiles.get(nextIndex);
             }
         }
-        return null; // Zwraca null, jeśli pliku o podanej nazwie nie znaleziono
+        return null; // If file not found, return null
     }
 	
 	private String getPreviousFileName() {
 		for (int i = 0; i < this.imageFiles.size(); i++) {
 	        if (this.imageFiles.get(i).equals(imagefile.getName())) {
-	            // Oblicz poprzedni indeks (lub ostatni indeks, jeśli i = 0)
+	            // Calculate previous file index, if the index is first get the last index
 	            int previousIndex = (i - 1 >= 0) ? i - 1 : imageFiles.size() - 1;
 	            return imageFiles.get(previousIndex);
 	        }
 	    }
-	    return null; // Zwraca null, jeśli pliku o podanej nazwie nie znaleziono
+	    return null; // If file not found, return null
     }
 	
-	@FXML
+	@FXML //Something not work 
 	private void zoomIn() {
 		Double height = imgaeViewer1.getFitHeight();
 		Double width = imgaeViewer1.getFitWidth();
@@ -176,8 +176,10 @@ public class MainController {
 		imgaeViewer1.setFitWidth(width);
 	}
 	
-	@FXML
+	@FXML //Something not work 
 	private void zoomOut() {
+		System.out.println(imgaeViewer1.getFitHeight());
+		
 		Double height = imgaeViewer1.getFitHeight();
 		Double width = imgaeViewer1.getFitWidth();
 		
@@ -189,7 +191,7 @@ public class MainController {
 	}
 	
 	/**
-	 * This function open new scene with image orgainzer 
+	 * This function open new scene with image organizer feature
 	 */
 	@FXML
 	private void organize() {
@@ -206,7 +208,7 @@ public class MainController {
 
 		}
 		catch(Exception e){
-			
+			//Show alert with error code
 			Alert alert = new Alert(AlertType.INFORMATION);
     		alert.setTitle("Error");
     		alert.setHeaderText(e.toString());			

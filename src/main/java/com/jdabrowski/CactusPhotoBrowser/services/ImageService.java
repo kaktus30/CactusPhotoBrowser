@@ -199,10 +199,12 @@ public class ImageService{
                 int orientation = getOrientation(path);
                 if (orientation >1) {
                 	imageView.setImage(rotateImage(image, orientation));
-                	imageView.setDisable(false);
+                	
+
                 }else {
                 	imageView.setImage(image);
-                	imageView.setDisable(false);
+                	imageView.setFitHeight(image.getHeight());
+                	imageView.setFitWidth(image.getWidth());
                 }
                 
             	
